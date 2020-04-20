@@ -1,0 +1,45 @@
+{% extends "users/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container d-flex justify-content-center align-items-start mt-5 flex-row">
+  <div class="col-md-9">
+    <div class="col-md-12 content-section">
+        <p class="text-muted">Current or upcoming contests</p>
+        <table class="table table-bordered table-striped">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for quest in object.question_list %}
+    <tr class="p-0">
+      <th scope="row">{{quest.difficulty}}</th>
+      <td><a href="{% url 'question-detail' object.id quest.id %}">{{quest.title}}</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+    </div>
+
+
+     </div>
+   <div class="col-lg-3 col-md-12 col-sm-12">
+        <div>
+          <div class="content-section">
+            <h4 class="border-bottom">Competitions</h4>
+            <p class='text-muted'>Following are the upcoming competitions.
+              <ul class="list-group">
+              </ul>
+            </p>
+          </div>
+        </div>
+        <div>
+            <div class="content-section">
+
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

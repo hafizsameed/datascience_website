@@ -1,0 +1,59 @@
+{% extends "users/base.html" %}
+{% block content %}
+<div class="mt-5" style="display:flex; flex-direction:row;justify-content:space-between;">
+    <div class="content-section col-md-9 d-flex justify-content-center align-items-center">
+        <h4 style="text-transform: capitalize" class="text-muted border-bottom">Content to be added</h4>
+        <!--    home content-->
+    </div>
+   <div class="col-md-3">
+        <div>
+          <div class="content-section shadow">
+            <h5 style="font-weight: bold" class="border-bottom">Competitions</h5>
+            <p style="font-size: 12px" class='text-muted'>Following are the upcoming competitions.</p>
+              <ul class="list-group">
+              {%for comp in competitions %}
+                <div style="display:flex;padding:10px;justify-content:center;align-items: center;flex-direction:column;"  class="list-group-item list-group-item-light" >
+                    <a style="color:purple;text-decoration:underline;padding:0px;font-size:14px" href="#">{{comp.title}}</a>
+                    <p style="padding:0px;font-size:14px;margin:0px">{{comp.start_time}} </p>
+                </div>
+                {% endfor %}
+              </ul>
+          </div>
+            <div class="content-section shadow">
+            <h5 style="font-weight:600;">Top Rated</h5>
+             <table class="table w-auto table-striped border">
+                <thead>
+                     <tr>
+                      <th style="text-align: left" scope="col">#</th>
+                      <th style="text-align: center" scope="col">User</th>
+                      <th scope="col">ratings</th>
+                    </tr>
+                </thead>
+              <tbody>
+              {% for user in users %}
+              <tr>
+                  <th style="text-align: left" class="p-1" scope="row">{{forloop.counter}}</th>
+                  <td style="text-align: center" class="p-1 col-md-10">{{user.user.username}}</td>
+                  <td  style="text-align: center;"  class="p-1 text-align-center">{{user.rating}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            </table>
+          </div>
+        </div>
+</div>
+    </div>
+
+{% endblock content %}
+
+<div class="col-md-4">
+    {%for comp in competitions %}
+        <div >
+            <h2>{{comp.title}}</h2>
+            <p>{{comp.details}}</p>
+            <strong>{{comp.start_date}}</strong>
+            <p>{{comp.duration}}</p>
+            <a href="#">register</a>
+        </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,36 @@
+{% extends "users/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container d-flex justify-content-center align-items-start mt-5 flex-row">
+  <div class="col-md-9">
+    <div class="col-md-12 d-flex justify-content-center mb-5">
+        <h4 class="border-bottom"> {{question.difficulty}}. {{question.title}}</h4>
+    </div>
+    <div id="descriptor">{{question.prob_Description}}</div><br/>
+    <div> {{question.file_detail}}</div><br/>
+    <div> {{question.evaluation}}</div><br/>
+
+     </div>
+   <div class="col-lg-3 col-md-12 col-sm-12">
+        <div>
+          <div class="content-section">
+            <h4 class="border-bottom"><a style="text-transform:capitalize" href="{% url 'indivcontest' comp.id  %}">{{comp.title}}</a> </h4>
+            <p class='text-muted'>Following are the upcoming competitions.
+              <ul class="list-group">
+              </ul>
+            </p>
+          </div>
+        </div>
+        <div>
+            <div class="content-section">
+                <h4 class="border-bottom">Submit</h4>
+                <form  enctype="multipart/form-data" class="d-flex justify-content-center flex-column" method="POST">
+                    {% csrf_token %}
+                    {{form | crispy}}
+                    <button class="btn btn-secondary" type="submit">Submit<button/>
+                </form>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
