@@ -46,14 +46,38 @@
 
 {% endblock content %}
 
-<div class="col-md-4">
-    {%for comp in competitions %}
-        <div >
-            <h2>{{comp.title}}</h2>
-            <p>{{comp.details}}</p>
-            <strong>{{comp.start_date}}</strong>
-            <p>{{comp.duration}}</p>
-            <a href="#">register</a>
-        </div>
-    {% endfor %}
-</div>
+
+{% block script %}
+<script src='https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js'></script>
+<script>
+// websocket scripts
+var loc = window.location
+var formData = $("#form")
+var msgInput = $("#id_message")
+var chatHolder = $("#chat-items")
+var btn =document.getElementById('btn')
+var me = $('#myUsername').val()
+
+var wsStart = 'ws://'
+if(loc.protocol == 'https:'){
+    wsStart = 'wss://'
+}
+var endpoint = wsStart + loc.host + loc.pathname;
+var socket = new ReconnectingWebSocket(endpoint)
+console.log(endpoint)
+
+socket.onmessage = function(e){
+    console.log("message",e);
+    }
+socket.onopen= function(e){
+    console.log("open",e);
+}
+socket.onerror= function(e){
+    console.log("error",e);
+}
+socket.onclose = function(e){
+    console.log("close",e)
+}
+
+</script>
+{% endblock %}

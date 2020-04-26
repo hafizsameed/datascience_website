@@ -1,10 +1,10 @@
-{% extends "users/base.html" %}
+{% extends "competitions/base2.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
-<div class="container d-flex justify-content-center align-items-start mt-5 flex-row">
+<div class="d-flex justify-content-center align-items-start flex-row">
   <div class="col-md-9">
     <div class="col-md-12 content-section">
-        <p class="text-muted">Current or upcoming contests</p>
+        <p class="text-muted">Problems</p>
         <table class="table table-bordered table-striped">
   <thead>
     <tr>
@@ -13,10 +13,10 @@
     </tr>
   </thead>
   <tbody>
-  {% for quest in object.question_list %}
+  {% for quest in comp.question_list %}
     <tr class="p-0">
       <th scope="row">{{quest.difficulty}}</th>
-      <td><a href="{% url 'question-detail' object.id quest.id %}">{{quest.title}}</a></td>
+      <td><a href="{% url 'question-detail' comp.id quest.id %}">{{quest.title}}</a></td>
     </tr>
   {% endfor %}
   </tbody>
@@ -28,11 +28,9 @@
    <div class="col-lg-3 col-md-12 col-sm-12">
         <div>
           <div class="content-section">
-            <h4 class="border-bottom">Competitions</h4>
-            <p class='text-muted'>Following are the upcoming competitions.
-              <ul class="list-group">
-              </ul>
-            </p>
+            <h4 style='text-align:center;text-transform:capitalize' class="border-bottom">{{comp.title}}</h4>
+            <h6 id='timer-text' style="text-align:center;color:green">Time Remaining </h6>
+            <h3 style='font-weight:500;font-family:monospace;text-align:center' id='timer' class='text-muted'></h3>
           </div>
         </div>
         <div>
@@ -42,4 +40,28 @@
         </div>
     </div>
 </div>
+<script>
+     var timerdiv = document.getElementById("timer");
+     var timertextdiv = document.getElementById("timer-text");
+     date = new Date("{{ comp.end_time.isoformat}}")
+     console.log(date,"date")
+     var countDownDate = date
+var x = setInterval(function() {
+  var now = new Date().getTime();
+  var distance = countDownDate - now;
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  timerdiv.innerHTML = hours + "h "
+  + minutes + "m " + seconds + "s ";
+  if (distance < 0) {
+    clearInterval(x);
+    timerdiv.innerHTML = "Finished";
+    timertextdiv.innerHTML='';
+  }
+}, 1000);
+            </script>
+
 {% endblock content %}

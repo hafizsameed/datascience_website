@@ -1,4 +1,4 @@
-{% extends "users/base.html" %}
+{% extends "competitions/base2.html" %}
 {% load crispy_forms_tags %}
 {% block content %}
 <div class="container d-flex justify-content-center align-items-start mt-5 flex-row">
@@ -14,23 +14,97 @@
    <div class="col-lg-3 col-md-12 col-sm-12">
         <div>
           <div class="content-section">
-            <h4 class="border-bottom"><a style="text-transform:capitalize" href="{% url 'indivcontest' comp.id  %}">{{comp.title}}</a> </h4>
-            <p class='text-muted'>Following are the upcoming competitions.
-              <ul class="list-group">
-              </ul>
-            </p>
+            <h4 style='text-align:center;text-transform:capitalize' class="border-bottom">{{comp.title}}</h4>
+            <h6 id='timer-text' style="text-align:center;color:green">Time Remaining </h6>
+            <h3 style='font-weight:500;font-family:monospace;text-align:center' id='timer' class='text-muted'></h3>
           </div>
         </div>
         <div>
             <div class="content-section">
-                <h4 class="border-bottom">Submit</h4>
-                <form  enctype="multipart/form-data" class="d-flex justify-content-center flex-column" method="POST">
+               <h4 class="border-bottom">Submit</h4>
+                <form  id="form" enctype="multipart/form-data" class="d-flex justify-content-center flex-column" method="POST">
                     {% csrf_token %}
                     {{form | crispy}}
-                    <button class="btn btn-secondary" type="submit">Submit<button/>
+                    <button id="submit-btn" class="btn btn-secondary" type="submit">Submit</button>
                 </form>
           </div>
         </div>
     </div>
+            
+        </div>
+    </div>
 </div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js'></script>
+<script>
+    //timer code
+     var timerdiv = document.getElementById("timer");
+     var timertextdiv = document.getElementById("timer-text");
+     date = new Date("{{ comp.end_time.isoformat}}")
+     console.log(date,"date")
+     var countDownDate = date
+var x = setInterval(function() {
+  var now = new Date().getTime();
+  var distance = countDownDate - now;
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  timerdiv.innerHTML = hours + "h "
+  + minutes + "m " + seconds + "s ";
+  if (distance < 0) {
+    clearInterval(x);
+    timerdiv.innerHTML = "Finished";
+    timertextdiv.innerHTML='';
+  }
+}, 1000);
+     //end timer code
+
+    // submit code
+var loc = window.location
+var formData = document.getElementById('form')
+var send_btn = document.getElementById('submit-btn')
+
+var wsStart = 'ws://'
+if(loc.protocol == 'https:'){
+    wsStart = 'wss://'
+}
+var endpoint = wsStart + loc.host + loc.pathname;
+urlinp = document.createElement('input');
+urlinp.setAttribute('value',endpoint)
+urlinp.setAttribute('name','url')
+urlinp.style.display='none';
+formData.appendChild(urlinp)
+var socket = new ReconnectingWebSocket(endpoint)
+console.log(endpoint)
+
+socket.onmessage = function(e){
+    console.log("message",e);
+    //  send_btn.addEventListener('click',async function(event){
+    //      var msgtext = 'hello world'
+    //     var finaldata = {
+    //         action:'check',
+    //         message:'message 1'
+    //     }
+    //     await socket.send(JSON.stringify(finaldata))
+    //     formData.submit()
+    //     formData[0].reset()
+    // })
+    }
+socket.onopen= function(e){
+    console.log("open",e);
+}
+socket.onerror= function(e){
+    console.log("error",e);
+}
+socket.onclose = function(e){
+    console.log("close",e)
+}
+
+
+
+
+    //end submit code
+            </script>
 {% endblock content %}
+

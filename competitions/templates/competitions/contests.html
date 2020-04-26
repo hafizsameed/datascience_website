@@ -15,29 +15,38 @@
     </tr>
   </thead>
   <tbody>
-  {% for comp in upcoming %}
+  {% for comp in reg_upcoming %}
     <tr class="p-0">
-      <th scope="row">{{comp.title}}</th>
+      <th scope="row">{{comp.title}}
+      {% if comp.started %}
+          <a href="{% url 'indivcontest' comp.id  %}">enter</a>
+      {%endif%}
+      </th>
         <td>{{comp.start_time}}</td>
-
-
-      <td>{{ comp.duration }}</td>
-        <td style="text-align: center" id="{{comp.id}}"><a href="{% url 'register' comp.id %}">register</a></td>
-        {% for u in comp.reg_list %}
-            {% if u.username == user.username %}
-                <script>
-                    console.log('{{comp.id}}')
-                    reg = document.getElementById('{{comp.id}}')
-                    reg.style.display="none"
-                </script>
-
-                <td class="d-flex justify-content-center flex-column align-items-center">
-                    <p style="color:green;font-weight:bold;padding:0px;margin:0px">registered</p>
-                    <a href="#" style="font-size:12px;text-decoration:underline;color:purple">x{{comp.reg_list_len}}</a>
-                </td>
-            {% endif %}
-        {% endfor %}
-
+        <td>{{ comp.duration }}</td>
+        <td class="d-flex justify-content-center flex-column align-items-center">
+        {% if comp.started %}
+          <p style="color:red;font-weight:bold;padding:0px;margin:0px">Started</p>
+        {%else%}
+          <p style="color:green;font-weight:bold;padding:0px;margin:0px">registered</p>
+          <a href="#" style="font-size:12px;text-decoration:underline;color:purple">x{{comp.reg_list_len}}</a>
+        {%endif%}
+          </td>
+    </tr>
+{% endfor %}
+ {% for comp in not_reg_upcoming %}
+    <tr class="p-0">
+      <th scope="row">{{comp.title}}
+      </th>
+        <td>{{comp.start_time}}</td>
+        <td>{{ comp.duration }}</td>
+        <td style="text-align: center" id="{{comp.id}}">
+        {% if comp.started %}
+          <p style="color:red;font-weight:bold;padding:0px;margin:0px">Started</p>
+        {%else%}
+          <a href="{% url 'register' comp.id %}">register</a>
+        {%endif%}
+        </td>
     </tr>
 {% endfor %}
   </tbody>

@@ -1,0 +1,145 @@
+{% extends "competitions/base2.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-start flex-row">
+  <div class="col-md-9">
+         <div   class="col-md-12 content-section">
+        <p class="text-muted">My Submissions</p>
+        <table class="table table-striped table-bordered">
+  <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">When</th>
+      <th scope="col">Who</th>
+      <th scope="col">Problem</th>
+      <th scope="col">Verdict</th>
+    </tr>
+  </thead>
+  <tbody id="table-body">
+  {% for sub in submissions %}
+    <tr class="p-0">
+      <th scope="row">{{sub.id}}</th>
+        <td>{{sub.time}}</td>
+        <td>{{ sub.user.username }}</td>
+        <td>{{sub.question.difficulty}}.{{ sub.question.title }}</td>
+        <td id="{{sub.id}}" class="d-flex justify-content-center flex-column align-items-center">
+        {% if sub.verdict == 'checking' %}
+          <p style="color:orange;font-weight:bold;padding:0px;margin:0px">checking..</p>
+        {%elif sub.verdict == 'accepted' %}
+          <p style="color:green;font-weight:bold;padding:0px;margin:0px">accepted</p>
+        {% else %}
+          <a href="#" style="font-size:12px;color:red">Failed</a>
+        {%endif%}
+          </td>
+    </tr>
+{% endfor %}
+ {% for comp in not_reg_upcoming %}
+    <tr class="p-0">
+      <th scope="row">{{comp.title}}
+      </th>
+        <td>{{comp.start_time}}</td>
+        <td>{{ comp.duration }}</td>
+        <td style="text-align: center" id="{{comp.id}}">
+        {% if comp.started %}
+          <p style="color:red;font-weight:bold;padding:0px;margin:0px">Started</p>
+        {%else%}
+          <a href="{% url 'register' comp.id %}">register</a>
+        {%endif%}
+        </td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+    </div>
+     </div>
+   <div class="col-lg-3 col-md-12 col-sm-12">
+        <div>
+          <div class="content-section">
+            <h4 style='text-align:center;text-transform:capitalize' class="border-bottom">{{comp.title}}</h4>
+            <h6 id='timer-text' style="text-align:center;color:green">Time Remaining </h6>
+            <h3 style='font-weight:500;font-family:monospace;text-align:center' id='timer' class='text-muted'></h3>
+          </div>
+        </div>
+        <div>
+        </div>
+    </div>
+
+        </div>
+    </div>
+</div>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.js'></script>
+<script>
+    //timer code
+     var timerdiv = document.getElementById("timer");
+     var timertextdiv = document.getElementById("timer-text");
+     date = new Date("{{ comp.end_time.isoformat}}")
+     console.log(date,"date")
+     var countDownDate = date
+var x = setInterval(function() {
+  var now = new Date().getTime();
+  var distance = countDownDate - now;
+  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+  timerdiv.innerHTML = hours + "h "
+  + minutes + "m " + seconds + "s ";
+  if (distance < 0) {
+    clearInterval(x);
+    timerdiv.innerHTML = "Finished";
+    timertextdiv.innerHTML='';
+  }
+}, 1000);
+     //end timer code
+
+    // submit code
+var loc = window.location
+var wsStart = 'ws://'
+if(loc.protocol == 'https:'){
+    wsStart = 'wss://'
+}
+var question_id = '{{request.session.question_id}}'
+var compid = '{{request.session.compid}}'
+console.log(compid,question_id,'compid and question id')
+var endpoint = '{{request.session.url}}';
+console.log(endpoint,'endpoint')
+var socket = new ReconnectingWebSocket(endpoint)
+socket.onmessage = function(e){
+    console.log("message",e);
+    var data = JSON.parse(e.data);
+    console.log(data,'data');
+    var verdict = document.getElementById(`${data.id}`);
+    verdict.innerHTML= data.verdict;
+    verdict.style.color='orange'
+    verdict.style.fontWeight='bold'
+
+    }
+
+socket.onopen= function(e){
+    console.log("open",e);
+    {% for i in submissions%}
+        var sub_verd = '{{i.verdict}}'
+        if(sub_verd == ''){
+             var finaldata = {
+            action:'check',
+            message:{sub_id : {{i.id}}}
+            }
+        socket.send(JSON.stringify(finaldata))
+        }
+    {% endfor %}
+}
+socket.onerror= function(e){
+    console.log("error",e);
+}
+socket.onclose = function(e){
+    console.log("close",e)
+}
+
+
+
+
+    //end submit code
+            </script>
+{% endblock content %}
+

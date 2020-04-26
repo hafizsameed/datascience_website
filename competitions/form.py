@@ -8,5 +8,5 @@ from .models import Submission
 class SubmissionForm(forms.ModelForm):
     class Meta:
         model = Submission
-        exclude = ('user','competition','question')
+        fields = ['file']
 
