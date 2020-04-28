@@ -7,7 +7,7 @@ from django.views.generic import DetailView
 from .form import SubmissionForm
 from django.contrib import messages
 from django.core.exceptions import SuspiciousOperation
-
+from .tasks import hello_world
 
 def home(request):
         competions = Competitions.objects.all()
@@ -128,6 +128,8 @@ def ratings(request):
 
 def mysubmissions(request,param1):
         compid = param1
+        # result= hello_world.delay()
+        # print(result,'result')
         comp = Competitions.objects.filter(id=compid).first()
         submissions = Submission.objects.filter(user=request.user, competition=comp).order_by('-time')
         context={

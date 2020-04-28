@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'competitions.apps.CompetitionsConfig',
     'crispy_forms',
     'users.apps.UsersConfig',
@@ -40,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'channels',
+
 ]
 
 MIDDLEWARE = [
@@ -70,7 +71,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'dango_project.wsgi.application'
 ASGI_APPLICATION = 'dango_project.routing.application'
 
@@ -137,13 +137,21 @@ CHANNEL_LAYERS={
     "default":{
         "BACKEND":"channels_redis.core.RedisChannelLayer",
         "CONFIG":{
-            "hosts":[("localhost",6379)],
-            # "hosts":[os.environ.get('REDIS_URL','redis://localhost:6379')]
+            # "hosts":[("localhost",6379)],
+            "hosts":[os.environ.get('REDIS_URL','redis://localhost:6379')]
         }    
     } 
 }
+from kombu import Exchange, Queue
 
-BROKER_URL = 'redis://localhost:6379/0'  # our redis address
+CELERY_DEFAULT_QUEUE = 'myqueue'
+CELERY_QUEUES = (
+    Queue('myqueue', Exchange('default'), routing_key='default'),
+)
+# BROKER_URL = 'django://'
+broker_url = 'amqp://guest:guest@localhost:5672/myvhost'
+# BROKER_URL = 'redis://localhost:6379/0'  # our redis address
+# BROKER_TRANSPORT = 'redis'
 # use json format for everything
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'

@@ -75,31 +75,31 @@ urlinp.setAttribute('value',endpoint)
 urlinp.setAttribute('name','url')
 urlinp.style.display='none';
 formData.appendChild(urlinp)
-var socket = new ReconnectingWebSocket(endpoint)
-console.log(endpoint)
-
-socket.onmessage = function(e){
-    console.log("message",e);
-    //  send_btn.addEventListener('click',async function(event){
-    //      var msgtext = 'hello world'
-    //     var finaldata = {
-    //         action:'check',
-    //         message:'message 1'
-    //     }
-    //     await socket.send(JSON.stringify(finaldata))
-    //     formData.submit()
-    //     formData[0].reset()
-    // })
-    }
-socket.onopen= function(e){
-    console.log("open",e);
-}
-socket.onerror= function(e){
-    console.log("error",e);
-}
-socket.onclose = function(e){
-    console.log("close",e)
-}
+// var socket = new ReconnectingWebSocket(endpoint)
+// console.log(endpoint)
+//
+// socket.onmessage = function(e){
+//     console.log("message",e);
+//     //  send_btn.addEventListener('click',async function(event){
+//     //      var msgtext = 'hello world'
+//     //     var finaldata = {
+//     //         action:'check',
+//     //         message:'message 1'
+//     //     }
+//     //     await socket.send(JSON.stringify(finaldata))
+//     //     formData.submit()
+//     //     formData[0].reset()
+//     // })
+//     }
+// socket.onopen= function(e){
+//     console.log("open",e);
+// }
+// socket.onerror= function(e){
+//     console.log("error",e);
+// }
+// socket.onclose = function(e){
+//     console.log("close",e)
+// }
 
 
 

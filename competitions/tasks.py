@@ -1,18 +1,17 @@
-from __future__ import absolute_import
-import time
-import json
-import logging
-from dango_project.celery import app
+# from __future__ import absolute_import,unicode_literals
+from celery import shared_task
 from .models import Submission
-from channels import Channel
+from dango_project.celery import app
+from channels.layers import get_channel_layer
+import json
+from asgiref.sync import async_to_sync
+# log = logging.getLogger(__name__)
 
-log = logging.getLogger(__name__)
-
-@app.task
-def task1(sub_id, reply_channel):
+# @shared_task
+# def task1(sub_id, reply_channel):
     # time sleep represent some long running process
-    time.sleep(3)
-    print('hello world')
+    # time.sleep(3)
+    # print('hello world')
     # Change task status to completed
     # job = Job.objects.get(pk=job_id)
     # log.debug("Running job_name=%s", job.name)
@@ -31,7 +30,34 @@ def task1(sub_id, reply_channel):
     #         })
     #     })
 
-@app.task
+@shared_task
 def hello_world():
-    time.sleep(3)
     print('hello world')
+
+# @app.task
+# def hello_world():
+#     # asyncio.sleep(3)
+#     print('hello world')
+#     return 1
+
+@app.task
+def check(chat_name,channel_name, sub):
+    submission = Submission.objects.filter(id=sub).first()
+    submission.verdict = 'accepted'
+    submission.save()
+    # sub.verdict = 'accepted'
+    # sub.save()
+    myResponse = {
+        'id': sub,
+        'verdict': 'accepted',
+    }
+    print('task is in progress')
+    jsonform = json.dumps(myResponse)
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        'sameed_1',
+        {
+            'type': 'chat_message',
+            'text': jsonform
+        }
+    )

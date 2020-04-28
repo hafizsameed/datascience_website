@@ -23,7 +23,9 @@
         <td>{{ sub.user.username }}</td>
         <td>{{sub.question.difficulty}}.{{ sub.question.title }}</td>
         <td id="{{sub.id}}" class="d-flex justify-content-center flex-column align-items-center">
-        {% if sub.verdict == 'checking' %}
+        {% if sub.verdict == '' %}
+             <p style="font-weight:bold;padding:0px;margin:0px">In Queue</p>
+        {% elif sub.verdict == 'checking' %}
           <p style="color:orange;font-weight:bold;padding:0px;margin:0px">checking..</p>
         {%elif sub.verdict == 'accepted' %}
           <p style="color:green;font-weight:bold;padding:0px;margin:0px">accepted</p>
@@ -99,20 +101,26 @@ var wsStart = 'ws://'
 if(loc.protocol == 'https:'){
     wsStart = 'wss://'
 }
-var question_id = '{{request.session.question_id}}'
-var compid = '{{request.session.compid}}'
-console.log(compid,question_id,'compid and question id')
-var endpoint = '{{request.session.url}}';
-console.log(endpoint,'endpoint')
+var endpoint = wsStart + loc.host + loc.pathname;
 var socket = new ReconnectingWebSocket(endpoint)
 socket.onmessage = function(e){
     console.log("message",e);
     var data = JSON.parse(e.data);
     console.log(data,'data');
     var verdict = document.getElementById(`${data.id}`);
-    verdict.innerHTML= data.verdict;
-    verdict.style.color='orange'
-    verdict.style.fontWeight='bold'
+    if(data.verdict == 'checking') {
+
+        verdict.innerHTML = data.verdict;
+        verdict.style.color = 'orange'
+        verdict.style.fontWeight = 'bold'
+    }
+    else if(data.verdict=='accepted'){
+
+        verdict.innerHTML = data.verdict;
+        verdict.style.color = 'green'
+        verdict.style.fontWeight = 'bold'
+
+    }
 
     }
 

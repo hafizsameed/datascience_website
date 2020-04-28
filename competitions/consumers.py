@@ -1,10 +1,12 @@
-import asyncio
+# import asyncio
 import json
 from django.contrib.auth import get_user_model
 from channels.consumer import AsyncConsumer
+from channels.generic.websocket import WebsocketConsumer
 from channels.db import database_sync_to_async
-from competitions.models import Submission,Competitions,Question
-from .tasks import hello_world
+from competitions.models import Submission
+from .tasks import hello_world,check
+from asgiref.sync import async_to_sync
 
 class MyConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
@@ -13,12 +15,12 @@ class MyConsumer(AsyncConsumer):
         self.chat_room = chat_room
         print(self.channel_name,"channel name")
         await self.channel_layer.group_add(
-            chat_room,
+            self.chat_room,
             self.channel_name
         )
         await self.send({
             "type":"websocket.accept",
-        }) 
+        })
 
     async def websocket_receive(self, event):
         print("recieve", event)
@@ -31,7 +33,8 @@ class MyConsumer(AsyncConsumer):
             print(submission,'sub')
             if loaded_dict_data.get('action')=='check':
                 #file will be checked here
-                hello_world()
+                ret_val = check.delay(chat_name=self.chat_room,channel_name=self.channel_name,sub=submission.id)
+                print(ret_val,'ret_val')
                 myResponse = {
                     'id': submission.id,
                     'verdict':'checking',
@@ -44,47 +47,17 @@ class MyConsumer(AsyncConsumer):
                         'type':'chat_message',
                         'text': json.dumps(myResponse)
                     }
-            )
+                )
+
 
     async def websocket_disconnect(self, event):
         print("disconnected", event)
-    
+
     async def chat_message(self,event):
         await self.send({
             'type':"websocket.send",
             'text':event['text']
         })
-
-
-
-
-
-# class MyMessageConsumer(AsyncConsumer):
-#     async def websocket_connect(self, event):
-#         print("my message consumer connected", event)
-#         await self.send({
-#             "type":"websocket.accept",
-#         })
-#         await self.send({
-#             'type':'websocket.send',
-#             'text':'hello world from message url'
-#         })
-
-#     async def websocket_receive(self, event):
-#         print("recieve", event)
-        # myResponse = {
-        #         'message':"hello message aayela hai",
-        #     }
-        # await self.channel_layer.group_send(
-        #         self.chat_room,
-        #         {
-        #             'type':'chat_message',
-        #             'text':json.dumps(myResponse)
-        #         }
-        #     )
-
-#     async def websocket_disconnect(self, event):
-#         print("disconnected", event)
 
 
 
@@ -110,7 +83,7 @@ class MyConsumer(AsyncConsumer):
 #         await self.send({
 #             "type":"websocket.accept"
 #         })
-        
+
 
 #     async def websocket_receive(self, event):
 #         print("recieve", event)
