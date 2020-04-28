@@ -1,4 +1,4 @@
-# import asyncio
+
 import json
 from django.contrib.auth import get_user_model
 from channels.consumer import AsyncConsumer
@@ -8,56 +8,85 @@ from competitions.models import Submission
 from .tasks import hello_world,check
 from asgiref.sync import async_to_sync
 
-class MyConsumer(AsyncConsumer):
-    async def websocket_connect(self, event):
-        print("my consumer connected", event)
-        chat_room = 'sameed_1'
-        self.chat_room = chat_room
-        print(self.channel_name,"channel name")
-        await self.channel_layer.group_add(
-            self.chat_room,
-            self.channel_name
-        )
-        await self.send({
-            "type":"websocket.accept",
-        })
+class MyConsumer(WebsocketConsumer):
 
-    async def websocket_receive(self, event):
-        print("recieve", event)
-        data = event.get("text", None)
-        if data is not None:
-            loaded_dict_data = json.loads(data)
-            my_dic = loaded_dict_data.get('message')
-            print(my_dic,'my dict')
-            submission = Submission.objects.filter(id=my_dic['sub_id']).first()
-            print(submission,'sub')
-            if loaded_dict_data.get('action')=='check':
-                #file will be checked here
-                ret_val = check.delay(chat_name=self.chat_room,channel_name=self.channel_name,sub=submission.id)
-                print(ret_val,'ret_val')
-                myResponse = {
-                    'id': submission.id,
-                    'verdict':'checking',
-                }
-                submission.verdict = 'checking'
-                submission.save()
-                await self.channel_layer.group_send(
-                    self.chat_room,
-                    {
-                        'type':'chat_message',
-                        'text': json.dumps(myResponse)
-                    }
-                )
+    def connect(self):
+        async_to_sync(self.channel_layer.group_add)("chat", self.channel_name)
+        self.accept()
+        print("###connected###")
 
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)("chat", self.channel_name)
 
-    async def websocket_disconnect(self, event):
-        print("disconnected", event)
+    def receive(self, text_data):
+        print(text_data,'recieved')
+        loaded_dict_data = json.loads(text_data)
+        my_dic = loaded_dict_data.get('message')
+        submission = Submission.objects.filter(id=my_dic['sub_id']).first()
+        if loaded_dict_data.get('action')=='check':
+            myResponse = {
+                'id': submission.id,
+                'verdict': 'checking',
+            }
+            submission.verdict = 'checking'
+            submission.save()
+            self.chat_room = 'chat'
+            self.send(text_data=json.dumps(myResponse))
+            check.delay(chat_name=self.chat_room,sub=submission.id)
 
-    async def chat_message(self,event):
-        await self.send({
-            'type':"websocket.send",
-            'text':event['text']
-        })
+    def chat_message(self, event):
+        self.send(text_data=json.dumps(event["text"]))
+
+# class MyConsumer(AsyncConsumer):
+#     async def websocket_connect(self, event):
+#         print("my consumer connected", event)
+#         chat_room = 'sameed_1'
+#         self.chat_room = chat_room
+#         print(self.channel_name,"channel name")
+#         await self.channel_layer.group_add(
+#             self.chat_room,
+#             self.channel_name
+#         )
+#         await self.send({
+#             "type":"websocket.accept",
+#         })
+#
+#     async def websocket_receive(self, event):
+#         print("recieve", event)
+#         data = event.get("text", None)
+#         if data is not None:
+#             loaded_dict_data = json.loads(data)
+#             my_dic = loaded_dict_data.get('message')
+#             print(my_dic,'my dict')
+#             submission = Submission.objects.filter(id=my_dic['sub_id']).first()
+#             print(submission,'sub')
+#             if loaded_dict_data.get('action')=='check':
+#                 #file will be checked here
+#                 ret_val = check.delay(chat_name=self.chat_room,channel_name=self.channel_name,sub=submission.id)
+#                 print(ret_val,'ret_val')
+#                 myResponse = {
+#                     'id': submission.id,
+#                     'verdict':'checking',
+#                 }
+#                 submission.verdict = 'checking'
+#                 submission.save()
+#                 await self.channel_layer.group_send(
+#                     self.chat_room,
+#                     {
+#                         'type':'chat_message',
+#                         'text': json.dumps(myResponse)
+#                     }
+#                 )
+#
+#
+#     async def websocket_disconnect(self, event):
+#         print("disconnected", event)
+#
+#     async def chat_message(self,event):
+#         await self.send({
+#             'type':"websocket.send",
+#             'text':event['text']
+#         })
 
 
 

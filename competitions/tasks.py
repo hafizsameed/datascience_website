@@ -4,6 +4,7 @@ from .models import Submission
 from dango_project.celery import app
 from channels.layers import get_channel_layer
 import json
+import asyncio
 from asgiref.sync import async_to_sync
 # log = logging.getLogger(__name__)
 
@@ -41,23 +42,22 @@ def hello_world():
 #     return 1
 
 @app.task
-def check(chat_name,channel_name, sub):
+def check(chat_name, sub):
+    print(chat_name,'chat_name')
     submission = Submission.objects.filter(id=sub).first()
     submission.verdict = 'accepted'
     submission.save()
-    # sub.verdict = 'accepted'
-    # sub.save()
     myResponse = {
         'id': sub,
         'verdict': 'accepted',
     }
     print('task is in progress')
-    jsonform = json.dumps(myResponse)
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
-        'sameed_1',
+        'chat',
         {
             'type': 'chat_message',
-            'text': jsonform
+            'text': myResponse
         }
     )
+    return myResponse
